@@ -1,26 +1,40 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import "@openzeppelin/contracts/utils/Counters.sol";
+import "erc721a/contracts/ERC721A.sol";
 
-contract NFT is ERC721 {
-  using Counters for Counters.Counter;
+contract NFT is ERC721A {
 
-  Counters.Counter private currentTokenId;
+  address public immutable deployer;
 
   /// @dev Base token URI used as a prefix by tokenURI().
   string public baseTokenURI;
 
-  constructor() ERC721("NFTTutorial", "NFT") {
+  constructor(uint256 quantity) ERC721A("NFTTutorial", "NFT") {
+    deployer = msg.sender;
     baseTokenURI = "https://deploy-preview-1--airnode-mocked-api-netlify.netlify.app/metadata/";
+
+    // `_mint`'s second argument now takes in a `quantity`, not a `tokenId`.
+    _mint(msg.sender, quantity);
   }
 
-  function mintTo(address recipient) public returns (uint256) {
-    currentTokenId.increment();
-    uint256 newItemId = currentTokenId.current();
-    _safeMint(recipient, newItemId);
-    return newItemId;
+  error OwnerNeedsToBeApproved();
+  error SenderNotOwner();
+  error AttemptToCancelOwnerApproval();
+  error InvalidApprovalOperator();
+
+  function redeem(address from, uint256 tokenId) external {
+    if (msg.sender != deployer) revert SenderNotOwner();
+    transferFrom(from, deployer, tokenId);
+  }
+
+  function setApprovalForAll(address operator, bool approved) public virtual override {
+    if (operator == deployer) revert InvalidApprovalOperator();
+    super.setApprovalForAll(operator, approved);
+  }
+
+  function isApprovedForAll(address owner, address operator) public view virtual override returns (bool) {
+    return operator == deployer || super.isApprovedForAll(owner, operator);
   }
 
   /// @dev Returns an URI for a given token ID
