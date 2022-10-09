@@ -6,6 +6,8 @@
   "scripts": {
     "compile": "npx hardhat compile",
     "deploy": "npx hardhat run scripts/deploy.ts --network polygonMumbai",
+    "deploy-multi": "npx hardhat run scripts/deploy-multi.ts --network polygonMumbai",
+    "mint-multi": "npx hardhat run scripts/mint-multi.ts --network polygonMumbai",
     "nft-meta": "npx hardhat token-uri --token-id --network polygonMumbai",
     "test": "npm run compile && TS_NODE_TRANSPILE_ONLY=1 npx hardhat test"
   },
